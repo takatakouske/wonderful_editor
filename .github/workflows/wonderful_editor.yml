@@ -37,6 +37,7 @@ jobs:
           bundle exec rails db:schema:load
         env:
           RAILS_ENV: test
+          DISABLE_SPRING: "1"
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
       - name: Rubocop
