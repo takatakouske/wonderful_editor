@@ -1,10 +1,29 @@
-require:
-  - rubocop-rails
-
-inherit_from:
-  - config/rubocop/rubocop.yml
-  - config/rubocop/rails.yml
-  - config/rubocop/rspec.yml
+inherit_mode:
+  merge:
+    - Exclude
 
 AllCops:
-  TargetRubyVersion: 2.7
+  TargetRubyVersion: 3.1
+  NewCops: enable         # 新Copの警告を止める（将来の追加Copも有効化）
+  Exclude:
+    - 'bin/**/*'
+    - 'db/schema.rb'
+    - 'db/migrate/**/*'
+    - 'node_modules/**/*'
+    - 'vendor/**/*'
+    - 'config/environments/**/*'
+
+plugins:
+  - rubocop-rails
+  - rubocop-rspec
+
+Rails:
+  Enabled: true
+
+# 文字列はシングルクォート許容（既存コードが楽）
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+# 旧名→新名に置換
+Naming/PredicatePrefix:
+  Enabled: true
