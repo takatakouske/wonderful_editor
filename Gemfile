@@ -32,6 +32,7 @@ gem "bootsnap", ">= 1.4.4", require: false
 group :development, :test do
   gem "byebug", platforms: %i[mri mingw x64_mingw]
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
+  gem 'shoulda-matchers', '~> 5.0'
   gem "factory_bot_rails"
   gem "faker"
   gem "rspec-rails"
@@ -52,7 +53,7 @@ end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 
-gem "active_model_serializers"
+gem "active_model_serializers", "~> 0.10.0"
 
 gem "devise"
 
