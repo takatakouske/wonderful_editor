@@ -4,14 +4,13 @@ module Api
       # 一覧・詳細は誰でも見られる
       skip_before_action :authenticate_user!, only: %i[index show]
 
-      before_action :set_article, only: %i[show update destroy]
+      before_action :set_article,      only: %i[show update destroy]
       before_action :authorize_owner!, only: %i[update destroy]
 
       # GET /api/v1/articles
       def index
         articles = Article.order(updated_at: :desc)
-        render json: articles,
-               each_serializer: Api::V1::ArticlePreviewSerializer
+        render json: articles, each_serializer: Api::V1::ArticlePreviewSerializer
       end
 
       # GET /api/v1/articles/:id
@@ -22,16 +21,20 @@ module Api
       # POST /api/v1/articles
       def create
         article = current_user.articles.new(article_params)
-        return render(json: article, status: :created) if article.save
-
-        render_unprocessable!(article)
+        if article.save
+          render json: article, serializer: Api::V1::ArticleDetailSerializer, status: :created
+        else
+          render_unprocessable!(article)
+        end
       end
 
       # PATCH/PUT /api/v1/articles/:id
       def update
-        return render(json: @article) if @article.update(article_params)
-
-        render_unprocessable!(@article)
+        if @article.update(article_params)
+          render json: @article, serializer: Api::V1::ArticleDetailSerializer
+        else
+          render_unprocessable!(@article)
+        end
       end
 
       # DELETE /api/v1/articles/:id
