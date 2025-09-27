@@ -22,7 +22,7 @@ module Api
       def create
         article = current_user.articles.new(article_params)
         if article.save
-          render json: article, serializer: Api::V1::ArticleDetailSerializer, status: :created
+          render json: article, status: :created
         else
           render_unprocessable!(article)
         end
