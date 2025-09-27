@@ -4,11 +4,11 @@ RSpec.describe "Api::V1::Articles#create", type: :request do
   let(:user) { create(:user) }
 
   before do
-    # ★ テスト時だけ current_user を差し替える（スタブ）
+    # ★ スタブ：テスト時だけ current_user を任意のユーザーに差し替える
     allow_any_instance_of(Api::V1::BaseApiController)
       .to receive(:current_user).and_return(user)
 
-    # 認証フィルタで止まらないように（必要に応じて）
+    # 念のため、認証フィルタも no-op に（current_user を見る実装なら不要ですが安全策）
     allow_any_instance_of(Api::V1::BaseApiController)
       .to receive(:authenticate_user!).and_return(true)
   end
@@ -23,17 +23,20 @@ RSpec.describe "Api::V1::Articles#create", type: :request do
     expect(response).to have_http_status(:created)
 
     json = JSON.parse(response.body)
-    data = json["article"] || json  # AMS adapter :json なら "article"
+    data = json["article"] || json  # AMS :json なら "article"、未設定なら直ハッシュ
 
     expect(data["title"]).to eq("new title")
-    expect(Article.last.user_id).to eq(user.id)   # 所有者が current_user
+    # DB の所有者が stub した user になっていること
+    expect(Article.last.user_id).to eq(user.id)
   end
 
-  it "returns 422 with errors for invalid params" do
+  it "returns 422 when params are invalid" do
     post "/api/v1/articles", params: { article: { title: "", body: "" } }
+
     expect(response).to have_http_status(:unprocessable_entity)
 
     json = JSON.parse(response.body)
+    # render_unprocessable! が { errors: [...] } を返す想定
     expect(json["errors"]).to be_present
   end
 end
