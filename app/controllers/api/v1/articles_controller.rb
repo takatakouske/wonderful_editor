@@ -24,7 +24,7 @@ module Api
         if article.save
           render json: article, status: :created
         else
-          render_unprocessable!(article)
+          render json: article, serializer: Api::V1::ArticleDetailSerializer, status: :created
         end
       end
 
