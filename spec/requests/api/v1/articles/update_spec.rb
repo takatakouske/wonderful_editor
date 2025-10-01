@@ -57,12 +57,17 @@ RSpec.describe "Api::V1::Articles#update", type: :request do
   end
 
   context "when unauthenticated" do
-    it "returns 401" do
-      # current_user をスタブしない＝未ログイン
-      patch "/api/v1/articles/#{article.id}", params: { article: { title: "nope" } }
-      expect(response).to have_http_status(:unauthorized)
-    end
+  before do
+    # ★ 仮フォールバック(User.first)を無効化して確実に未ログインにする
+    allow_any_instance_of(Api::V1::BaseApiController)
+      .to receive(:current_user).and_return(nil)
   end
+
+  it "returns 401" do
+    patch "/api/v1/articles/#{article.id}", params: { article: { title: "nope" } }
+    expect(response).to have_http_status(:unauthorized)
+  end
+end
 
   it "returns 404 when article not found" do
     allow_any_instance_of(Api::V1::BaseApiController)
@@ -72,4 +77,3 @@ RSpec.describe "Api::V1::Articles#update", type: :request do
     expect(response).to have_http_status(:not_found)
   end
 end
-
