@@ -1,3 +1,9 @@
+/* app/javascript/packs/hello_vue.js */
+
+/* Polyfills （babel preset-env の useBuiltIns: 'entry' に対応） */
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
+
 import Vue from "vue";
 import Vuex from "vuex";
 import VueRouter from "vue-router";
@@ -13,27 +19,35 @@ Vue.use(Vuex);
 Vue.use(VueRouter);
 Vue.use(Vuetify);
 
-// API は同一Rails内の /api/v1/* を叩く想定
+/* API は同一Rails内の /api/v1/* を叩く想定 */
 axios.defaults.baseURL = "/api/v1";
+axios.defaults.headers.common["Accept"] = "application/json";
+axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
+/* CSRF（通常のHTML画面から叩くとき用。meta が無ければ無視される） */
+const csrf = document.querySelector('meta[name="csrf-token"]');
+if (csrf) axios.defaults.headers.common["X-CSRF-Token"] = csrf.content;
 
-// turbolinks の有無どちらでも動くようにマウント関数を定義
+/* turbolinks の有無どちらでも動くマウント関数 */
 const mount = () => {
-  // Vuetifyインスタンス
   const vuetify = new Vuetify();
+  const target = document.getElementById("app"); // あればここへ、無ければ自動生成
 
-  // Vueアプリを生成して「要素未指定」でマウント（＝仮想DOM要素を返す）
   const app = new Vue({
     store,
     router,
     vuetify,
     render: h => h(App),
-  }).$mount();
+  });
 
-  // 生成された実DOM要素を body 末尾に挿入
-  document.body.appendChild(app.$el);
+  if (target) {
+    app.$mount("#app");
+  } else {
+    const vm = app.$mount();          // 要素未指定でマウント
+    document.body.appendChild(vm.$el); // 生成されたDOMを挿入
+  }
 };
 
-// turbolinks あり/なし双方に対応
+/* turbolinks あり/なし双方に対応 */
 if (window.Turbolinks) {
   document.addEventListener("turbolinks:load", mount);
 } else {
