@@ -2,10 +2,12 @@ module Api
   module V1
     module Auth
       class RegistrationsController < DeviseTokenAuth::RegistrationsController
-        # ← ここで CSRF を確実にスキップ
-        skip_before_action :verify_authenticity_token, raise: false
-        protect_from_forgery with: :null_session
+        skip_forgery_protection
         respond_to :json
+
+        before_action do
+          Rails.logger.info ">>> HIT #{self.class} < #{self.class.superclass} | ancestors: #{self.class.ancestors.take(5)}"
+        end
 
         private
 
