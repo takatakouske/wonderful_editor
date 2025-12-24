@@ -73,9 +73,9 @@ DeviseTokenAuth.setup do |config|
     config.token_lifespan = 2.weeks
 
 # headersに含まれている名前を下のように変える
-    config.headers_names = { 'access-token': "access-token",
-                           client: "client",
-                           expiry: "expiry",
-                           uid: "uid",
-                           'token-type': "token-type" }
+    # config.headers_names = { 'access-token': "access-token",
+    #                        client: "client",
+    #                        expiry: "expiry",
+    #                        uid: "uid",
+    #                        'token-type': "token-type" }
 end
