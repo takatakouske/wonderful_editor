@@ -1,8 +1,9 @@
 module JsonHelpers
-  # テストのレスポンス本文をJSONとして扱う小ヘルパー
-  def json(symbolize: false)
-    body = response.body
-    return {} if body.blank?
-    JSON.parse(body, symbolize_names: symbolize)
+  def json
+    JSON.parse(response.body)
   end
+end
+
+RSpec.configure do |config|
+  config.include JsonHelpers, type: :request
 end
