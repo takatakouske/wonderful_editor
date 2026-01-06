@@ -1,59 +1,36 @@
 module Api
   module V1
     class ArticlesController < BaseApiController
-      # 一覧・詳細は誰でも見られる
-      skip_before_action :authenticate_user!, only: %i[index show]
+      # 作成/更新/削除だけログイン必須
+      before_action :authenticate_user!, only: %i[create update destroy]
 
-      before_action :set_article,      only: %i[show update destroy]
-      before_action :authorize_owner!, only: %i[update destroy]
-
-      # GET /api/v1/articles
       def index
-        articles = Article.order(updated_at: :desc)
-        render json: articles, each_serializer: Api::V1::ArticlePreviewSerializer
+        render json: Article.all
       end
 
-      # GET /api/v1/articles/:id
       def show
-        render json: @article, serializer: Api::V1::ArticleDetailSerializer
+        article = Article.find(params[:id])
+        render json: article
       end
 
-      # POST /api/v1/articles
       def create
-        article = current_user.articles.new(article_params)
-        if article.save
-          render json: article, serializer: Api::V1::ArticleDetailSerializer, status: :created
-        else
-          render_unprocessable!(article) # => 422 + { errors: [...] }
-        end
+        article = current_user.articles.create!(article_params)
+        render json: article, status: :created
       end
 
-      # PATCH/PUT /api/v1/articles/:id
       def update
-        if @article.update(article_params)
-          render json: @article, serializer: Api::V1::ArticleDetailSerializer
-        else
-          render_unprocessable!(@article)
-        end
+        article = current_user.articles.find(params[:id])
+        article.update!(article_params)
+        render json: article
       end
 
-      # DELETE /api/v1/articles/:id
       def destroy
-        @article.destroy!
+        article = current_user.articles.find(params[:id])
+        article.destroy!
         head :no_content
       end
 
       private
-
-      def set_article
-        @article = Article.find(params[:id])
-      end
-
-      def authorize_owner!
-        return if @article.user_id == current_user.id
-
-        render json: { error: "Forbidden" }, status: :forbidden
-      end
 
       def article_params
         params.require(:article).permit(:title, :body)
