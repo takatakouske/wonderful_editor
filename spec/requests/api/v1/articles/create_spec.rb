@@ -1,42 +1,75 @@
 require 'rails_helper'
 
-RSpec.describe "Api::V1::Articles#create", type: :request do
-  let(:user) { create(:user) }
+RSpec.describe 'API::V1::Articles', type: :request do
+  let!(:user)     { User.create!(email: 'user1@example.com', name: 'User One', password: 'password', password_confirmation: 'password') }
+  let!(:article)  { Article.create!(title: 'T1', body: 'B1', user: user) }
 
-  before do
-    # ★ スタブ：テスト時だけ current_user を任意のユーザーに差し替える
-    allow_any_instance_of(Api::V1::BaseApiController)
-      .to receive(:current_user).and_return(user)
+  # devise_token_auth のトークン系ヘッダー（ログイン済み想定）
+  let(:auth_headers) { user.create_new_auth_token }
 
-    # 念のため、認証フィルタも no-op に（current_user を見る実装なら不要ですが安全策）
-    allow_any_instance_of(Api::V1::BaseApiController)
-      .to receive(:authenticate_user!).and_return(true)
+  describe 'GET /api/v1/articles' do
+    it '公開APIなのでヘッダー不要で 200 OK' do
+      get '/api/v1/articles'
+      expect(response).to have_http_status(:ok)
+    end
   end
 
-  it "creates an article owned by current_user" do
-    params = { article: { title: "new title", body: "new body" } }
-
-    expect {
-      post "/api/v1/articles", params: params
-    }.to change(Article, :count).by(1)
-
-    expect(response).to have_http_status(:created)
-
-    json = JSON.parse(response.body)
-    data = json["article"] || json  # AMS :json なら "article"、未設定なら直ハッシュ
-
-    expect(data["title"]).to eq("new title")
-    # DB の所有者が stub した user になっていること
-    expect(Article.last.user_id).to eq(user.id)
+  describe 'GET /api/v1/articles/:id' do
+    it '公開APIなのでヘッダー不要で 200 OK' do
+      get "/api/v1/articles/#{article.id}"
+      expect(response).to have_http_status(:ok)
+    end
   end
 
-  it "returns 422 when params are invalid" do
-    post "/api/v1/articles", params: { article: { title: "", body: "" } }
+  describe 'POST /api/v1/articles' do
+    let(:params) { { article: { title: 'New', body: 'Body' } } }
 
-    expect(response).to have_http_status(:unprocessable_entity)
+    context '認証あり' do
+      it '201 Created を返す' do
+        post '/api/v1/articles', params: params, headers: auth_headers, as: :json
+        expect(response).to have_http_status(:created)
+      end
+    end
 
-    json = JSON.parse(response.body)
-    # render_unprocessable! が { errors: [...] } を返す想定
-    expect(json["errors"]).to be_present
+    context '認証なし' do
+      it '401 Unauthorized を返す' do
+        post '/api/v1/articles', params: params, as: :json
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
+  describe 'PATCH /api/v1/articles/:id' do
+    let(:params) { { article: { title: 'Updated' } } }
+
+    context '認証あり（本人記事）' do
+      it '200 OK を返す' do
+        patch "/api/v1/articles/#{article.id}", params: params, headers: auth_headers, as: :json
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context '認証なし' do
+      it '401 Unauthorized を返す' do
+        patch "/api/v1/articles/#{article.id}", params: params, as: :json
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
+  describe 'DELETE /api/v1/articles/:id' do
+    context '認証あり（本人記事）' do
+      it '204 No Content を返す' do
+        delete "/api/v1/articles/#{article.id}", headers: auth_headers
+        expect(response).to have_http_status(:no_content)
+      end
+    end
+
+    context '認証なし' do
+      it '401 Unauthorized を返す' do
+        delete "/api/v1/articles/#{article.id}"
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
   end
 end

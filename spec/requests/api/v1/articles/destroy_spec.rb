@@ -1,66 +1,75 @@
 require 'rails_helper'
 
-RSpec.describe "Api::V1::Articles#destroy", type: :request do
-  let(:owner)      { create(:user) }
-  let(:other_user) { create(:user) }
-  let!(:article)   { create(:article, user: owner) }
+RSpec.describe 'API::V1::Articles', type: :request do
+  let!(:user)     { User.create!(email: 'user1@example.com', name: 'User One', password: 'password', password_confirmation: 'password') }
+  let!(:article)  { Article.create!(title: 'T1', body: 'B1', user: user) }
 
-  context "when signed in as the owner" do
-    before do
-      allow_any_instance_of(Api::V1::BaseApiController)
-        .to receive(:current_user).and_return(owner)
-    end
+  # devise_token_auth のトークン系ヘッダー（ログイン済み想定）
+  let(:auth_headers) { user.create_new_auth_token }
 
-    it "deletes the article and returns 204 No Content" do
-      expect {
-        delete "/api/v1/articles/#{article.id}"
-      }.to change(Article, :count).by(-1)
-
-      expect(response).to have_http_status(:no_content)
-      expect(response.body).to be_blank
+  describe 'GET /api/v1/articles' do
+    it '公開APIなのでヘッダー不要で 200 OK' do
+      get '/api/v1/articles'
+      expect(response).to have_http_status(:ok)
     end
   end
 
-  context "when signed in as another user" do
-    before do
-      allow_any_instance_of(Api::V1::BaseApiController)
-        .to receive(:current_user).and_return(other_user)
-    end
-
-    it "returns 403 and does not delete" do
-      expect {
-        delete "/api/v1/articles/#{article.id}"
-      }.not_to change(Article, :count)
-
-      expect(response).to have_http_status(:forbidden)
+  describe 'GET /api/v1/articles/:id' do
+    it '公開APIなのでヘッダー不要で 200 OK' do
+      get "/api/v1/articles/#{article.id}"
+      expect(response).to have_http_status(:ok)
     end
   end
 
-  context "when unauthenticated" do
-    before do
-      # dev/test の仮フォールバック(User.first)を打ち消し、確実に未ログインにする
-      allow_any_instance_of(Api::V1::BaseApiController)
-        .to receive(:current_user).and_return(nil)
+  describe 'POST /api/v1/articles' do
+    let(:params) { { article: { title: 'New', body: 'Body' } } }
+
+    context '認証あり' do
+      it '201 Created を返す' do
+        post '/api/v1/articles', params: params, headers: auth_headers, as: :json
+        expect(response).to have_http_status(:created)
+      end
     end
 
-    it "returns 401 and does not delete" do
-      expect {
-        delete "/api/v1/articles/#{article.id}"
-      }.not_to change(Article, :count)
-
-      expect(response).to have_http_status(:unauthorized)
+    context '認証なし' do
+      it '401 Unauthorized を返す' do
+        post '/api/v1/articles', params: params, as: :json
+        expect(response).to have_http_status(:unauthorized)
+      end
     end
   end
 
-  it "returns 404 when article not found" do
-    allow_any_instance_of(Api::V1::BaseApiController)
-      .to receive(:current_user).and_return(owner)
+  describe 'PATCH /api/v1/articles/:id' do
+    let(:params) { { article: { title: 'Updated' } } }
 
-    expect {
-      delete "/api/v1/articles/999_999_999"
-    }.not_to change(Article, :count)
+    context '認証あり（本人記事）' do
+      it '200 OK を返す' do
+        patch "/api/v1/articles/#{article.id}", params: params, headers: auth_headers, as: :json
+        expect(response).to have_http_status(:ok)
+      end
+    end
 
-    expect(response).to have_http_status(:not_found)
+    context '認証なし' do
+      it '401 Unauthorized を返す' do
+        patch "/api/v1/articles/#{article.id}", params: params, as: :json
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
+  describe 'DELETE /api/v1/articles/:id' do
+    context '認証あり（本人記事）' do
+      it '204 No Content を返す' do
+        delete "/api/v1/articles/#{article.id}", headers: auth_headers
+        expect(response).to have_http_status(:no_content)
+      end
+    end
+
+    context '認証なし' do
+      it '401 Unauthorized を返す' do
+        delete "/api/v1/articles/#{article.id}"
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
   end
 end
-

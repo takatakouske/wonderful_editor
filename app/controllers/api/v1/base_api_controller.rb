@@ -1,15 +1,12 @@
 module Api
   module V1
     class BaseApiController < Api::BaseController
-      # Devise Token Auth のトークン判定を有効化
+      # トークンからユーザーを特定する devise_token_auth の仕組みを有効化
       include DeviseTokenAuth::Concerns::SetUserByToken
 
-      # APIはCSRFセッションを使わない
-      protect_from_forgery with: :null_session
-
-      private
-
-      # DTAが生やす名前空間付きメソッドを、共通の名前に寄せる
+      # 以降は devise_token_auth がスコープ付きで提供するメソッドへ委譲
+      # mount_devise_token_auth_for を api/v1 にマウントしているので
+      # ヘルパは current_api_v1_user / authenticate_api_v1_user! / api_v1_user_signed_in?
       def current_user
         current_api_v1_user
       end
