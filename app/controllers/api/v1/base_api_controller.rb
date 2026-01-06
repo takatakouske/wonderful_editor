@@ -1,22 +1,30 @@
 module Api
   module V1
     class BaseApiController < Api::BaseController
-      # トークンからユーザーを特定する devise_token_auth の仕組みを有効化
+      # devise_token_auth が提供する SetUserByToken を全APIで有効化
       include DeviseTokenAuth::Concerns::SetUserByToken
 
-      # 以降は devise_token_auth がスコープ付きで提供するメソッドへ委譲
-      # mount_devise_token_auth_for を api/v1 にマウントしているので
-      # ヘルパは current_api_v1_user / authenticate_api_v1_user! / api_v1_user_signed_in?
+      # 原則ログイン必須（公開APIは各Controllerで skip する）
+      before_action :authenticate_user!
+
+      private
+
+      # devise_token_auth はスコープ単位のcurrent_xxxを返す
+      # current_api_v1_user を current_user という名前で扱えるようにエイリアス化
       def current_user
         current_api_v1_user
       end
 
-      def authenticate_user!
-        authenticate_api_v1_user!
-      end
-
+      # サインイン状態の判定もAPIスコープ版を利用
       def user_signed_in?
         api_v1_user_signed_in?
+      end
+
+      # 未ログインなら401で弾く
+      def authenticate_user!
+        return if user_signed_in?
+
+        render json: { error: "Unauthorized" }, status: :unauthorized
       end
     end
   end
