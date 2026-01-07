@@ -1,55 +1,90 @@
-/* app/javascript/packs/hello_vue.js */
-
-/* Polyfills （babel preset-env の useBuiltIns: 'entry' に対応） */
-import 'core-js/stable';
-import 'regenerator-runtime/runtime';
+/* eslint no-console: 0 */
+// Run this example by adding <%= javascript_pack_tag 'hello_vue' %> (and
+// <%= stylesheet_pack_tag 'hello_vue' %> if you have styles in your component)
+// to the head of your layout file,
+// like app/views/layouts/application.html.erb.
+// All it does is render <div>Hello Vue</div> at the bottom of the page.
 
 import Vue from "vue";
-import Vuex from "vuex";
+import Vuex from "vuex"
 import VueRouter from "vue-router";
-import App from "../app.vue";
-import router from "../router/router.js";
 import store from "../store/store.js";
-
+import router from "../router/router.js";
+import App from "../app.vue";
 import axios from "axios";
-import Vuetify from "vuetify";
+import VueAxios from "vue-axios";
 import "vuetify/dist/vuetify.min.css";
-
+import "highlight.js/styles/monokai.css";
+import Vuetify from "vuetify";
 Vue.use(Vuex);
 Vue.use(VueRouter);
+Vue.use(VueAxios, axios);
 Vue.use(Vuetify);
 
-/* API は同一Rails内の /api/v1/* を叩く想定 */
-axios.defaults.baseURL = "/api/v1";
-axios.defaults.headers.common["Accept"] = "application/json";
-axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
-/* CSRF（通常のHTML画面から叩くとき用。meta が無ければ無視される） */
-const csrf = document.querySelector('meta[name="csrf-token"]');
-if (csrf) axios.defaults.headers.common["X-CSRF-Token"] = csrf.content;
+const vuetify = new Vuetify();
 
-/* turbolinks の有無どちらでも動くマウント関数 */
-const mount = () => {
-  const vuetify = new Vuetify();
-  const target = document.getElementById("app"); // あればここへ、無ければ自動生成
-
+document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
     store,
     router,
     vuetify,
-    render: h => h(App),
-  });
+    render: h => h(App)
+  }).$mount()
+  document.body.appendChild(app.$el)
 
-  if (target) {
-    app.$mount("#app");
-  } else {
-    const vm = app.$mount();          // 要素未指定でマウント
-    document.body.appendChild(vm.$el); // 生成されたDOMを挿入
-  }
-};
+  console.log(app)
+})
 
-/* turbolinks あり/なし双方に対応 */
-if (window.Turbolinks) {
-  document.addEventListener("turbolinks:load", mount);
-} else {
-  document.addEventListener("DOMContentLoaded", mount);
-}
+
+// The above code uses Vue without the compiler, which means you cannot
+// use Vue to target elements in your existing html templates. You would
+// need to always use single file components.
+// To be able to target elements in your existing html/erb templates,
+// comment out the above code and uncomment the below
+// Add <%= javascript_pack_tag 'hello_vue' %> to your layout
+// Then add this markup to your html template:
+//
+// <div id='hello'>
+//   {{message}}
+//   <app></app>
+// </div>
+
+
+// import Vue from 'vue/dist/vue.esm'
+// import App from '../app.vue'
+//
+// document.addEventListener('DOMContentLoaded', () => {
+//   const app = new Vue({
+//     el: '#hello',
+//     data: {
+//       message: "Can you say hello?"
+//     },
+//     components: { App }
+//   })
+// })
+//
+//
+//
+// If the project is using turbolinks, install 'vue-turbolinks':
+//
+// yarn add vue-turbolinks
+//
+// Then uncomment the code block below:
+//
+// import TurbolinksAdapter from 'vue-turbolinks'
+// import Vue from 'vue/dist/vue.esm'
+// import App from '../app.vue'
+//
+// Vue.use(TurbolinksAdapter)
+//
+// document.addEventListener('turbolinks:load', () => {
+//   const app = new Vue({
+//     el: '#hello',
+//     data: () => {
+//       return {
+//         message: "Can you say hello?"
+//       }
+//     },
+//     components: { App }
+//   })
+// })
