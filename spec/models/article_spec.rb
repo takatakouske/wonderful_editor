@@ -12,17 +12,27 @@ RSpec.describe Article, type: :model do
 
   it { is_expected.to validate_presence_of(:body) }
   it { is_expected.to validate_length_of(:body).is_at_most(10_000) }
-  it '下書き記事として保存できる（status: :draft）' do
-    article = Article.new(title: 'Draft title', body: 'Draft body', user: user, status: :draft)
-    expect(article.save).to be true
-    expect(article.status).to eq('draft')
-    expect(article.status_draft?).to be true
-  end
+    describe 'status enum' do
+    it 'enum が定義されている（draft:0, published:1）' do
+      expect(Article.statuses).to eq("draft"=>0, "published"=>1)
+    end
 
-  it '公開記事として保存できる（status: :published）' do
-    article = Article.new(title: 'Pub title', body: 'Pub body', user: user, status: :published)
-    expect(article.save).to be true
-    expect(article.status).to eq('published')
-    expect(article.status_published?).to be true
+    it 'デフォルトは draft になる' do
+      article = build(:article) # factoryでstatus未指定
+      expect(article.status).to eq('draft')
+      expect(article.status_draft?).to be true
+    end
+
+    it '下書き記事として保存できる（status: :draft）' do
+      article = build(:article, status: :draft)
+      expect(article.save).to be true
+      expect(article.reload.status_draft?).to be true
+    end
+
+    it '公開記事として保存できる（status: :published）' do
+      article = build(:article, status: :published)
+      expect(article.save).to be true
+      expect(article.reload.status_published?).to be true
+    end
   end
 end
