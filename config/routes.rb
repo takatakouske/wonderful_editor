@@ -1,9 +1,9 @@
 Rails.application.routes.draw do
   root to: "home#index"
 
-  # reload 対策
-  get "sign_up", to: "home#index"
-  get "sign_in", to: "home#index"
+  # SPAのリロード対策（フロントのURLをサーバ側で受けてindexへ）
+  get "sign_up",      to: "home#index"
+  get "sign_in",      to: "home#index"
   get "articles/new", to: "home#index"
   get "articles/:id", to: "home#index"
 
@@ -13,10 +13,15 @@ Rails.application.routes.draw do
         registrations: "api/v1/auth/registrations",
         sessions:      "api/v1/auth/sessions"
       }
-      resources :articles
-      # 下書き一覧と詳細（自分の分のみ）
-　　　　get 'articles/drafts',     to: 'api/v1/articles/drafts#index'
-　　　　get 'articles/drafts/:id', to: 'api/v1/articles/drafts#show'
+
+      # 記事API（公開のみ index/show、作成更新削除は認証で）
+      resources :articles, only: %i[index show create update destroy]
+
+      # 下書きAPI（自分の下書きのみ）
+      namespace :articles do
+        get  "drafts",     to: "drafts#index"
+        get  "drafts/:id", to: "drafts#show"
+      end
     end
   end
 end
