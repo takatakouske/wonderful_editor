@@ -1,17 +1,17 @@
 module Api
   module V1
     module Articles
-      class DraftsController < ::Api::V1::BaseApiController
+      class DraftsController < BaseApiController
         before_action :authenticate_user!
 
-        # GET /api/v1/articles/drafts
         def index
-          articles = current_user.articles.draft.order(id: :desc)
+          # enum スコープ版
+          articles = current_user.articles.draft.order(created_at: :desc)
           render json: articles
         end
 
-        # GET /api/v1/articles/drafts/:id
         def show
+          # enum スコープ版
           article = current_user.articles.draft.find(params[:id])
           render json: article
         end
