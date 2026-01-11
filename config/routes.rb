@@ -14,6 +14,9 @@ Rails.application.routes.draw do
         sessions:      "api/v1/auth/sessions"
       }
       resources :articles
+      # 下書き一覧と詳細（自分の分のみ）
+　　　　get 'articles/drafts',     to: 'api/v1/articles/drafts#index'
+　　　　get 'articles/drafts/:id', to: 'api/v1/articles/drafts#show'
     end
   end
 end
