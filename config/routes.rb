@@ -18,6 +18,11 @@ Rails.application.routes.draw do
         get  "drafts",     to: "drafts#index"
         get  "drafts/:id", to: "drafts#show"
 
+      # ★ 追加：自分の“公開記事”一覧
+      namespace :current do
+        resources :articles, only: [:index], controller: "articles"
+      end
+
       # 記事API（公開のみ index/show、作成更新削除は認証で）
       resources :articles, only: %i[index show create update destroy]
 
