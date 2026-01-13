@@ -1,11 +1,16 @@
 {
   "name": "wonderful_editor",
+  "engines": {
+    "node": "15.X",
+    "yarn": "1.x"
+  },
   "private": true,
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.14.0",
     "@rails/actioncable": "^6.0.0",
     "@rails/activestorage": "^6.0.0",
     "@rails/ujs": "^6.0.0",
-    "@rails/webpacker": "5.4.4",
+    "@rails/webpacker": "4.2.2",
     "axios": "^0.19.2",
     "highlight.js": "^10.1.2",
     "marked": "^1.1.1",
@@ -21,17 +26,6 @@
   },
   "version": "0.1.0",
   "devDependencies": {
-    "@babel/plugin-proposal-class-properties": "^7.18.6",
-    "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
-    "@babel/plugin-proposal-private-methods": "^7.18.6",
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "css-loader": "3.6.0",
-    "postcss": "7.0.39",
-    "postcss-loader": "3.0.0",
-    "sass": "^1.97.2",
-    "sass-loader": "10.5.2",
-    "style-loader": "1.3.0",
-    "vue-style-loader": "4.1.3",
     "webpack-dev-server": "^3.11.0"
   }
 }
