@@ -5,11 +5,14 @@ module Api
       before_action :authenticate_user!, only: %i[create update destroy]
 
       def index
-        render json: Article.all
+        # 公開記事のみ
+        articles = Article.published.order(created_at: :desc)
+        render json: articles
       end
 
       def show
-        article = Article.find(params[:id])
+        # 公開記事のみ
+        article = Article.published.find(params[:id])
         render json: article
       end
 
@@ -33,6 +36,7 @@ module Api
       private
 
       def article_params
+        # status を許可していることを再確認
         params.require(:article).permit(:title, :body, :status)
       end
     end
