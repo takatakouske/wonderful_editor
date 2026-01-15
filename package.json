@@ -1,7 +1,7 @@
 {
   "name": "wonderful_editor",
   "engines": {
-    "node": ">=18 <19",
+    "node": ">=20 <23",
     "yarn": "1.x"
   },
   "private": true,
