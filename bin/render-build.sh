@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -o errexit
 
+export NODE_OPTIONS="--openssl-legacy-provider"
+
 # Node deps (Webpacker用)
 yarn install --frozen-lockfile || yarn install
 
