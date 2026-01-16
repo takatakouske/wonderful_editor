@@ -1,20 +1,23 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: <%= ENV.fetch("PGUSER", ENV.fetch("USER")) %>
-  # password: root
-  host: 127.0.0.1
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
 
 development:
   <<: *default
   database: wonderful_editor_development
+  host: <%= ENV.fetch("PGHOST", "localhost") %>
+  username: <%= ENV["PGUSER"] || ENV["POSTGRES_USER"] || ENV["USER"] || "postgres" %>
+  password: <%= ENV["PGPASSWORD"] || ENV["POSTGRES_PASSWORD"] || "" %>
 
 test:
   <<: *default
   database: wonderful_editor_test
+  host: <%= ENV.fetch("PGHOST", "localhost") %>
+  username: <%= ENV["PGUSER"] || ENV["POSTGRES_USER"] || ENV["USER"] || "postgres" %>
+  password: <%= ENV["PGPASSWORD"] || ENV["POSTGRES_PASSWORD"] || "" %>
 
 production:
   <<: *default
-  database: wonderful_editor_production
-  password: <%= ENV['WONDERFUL-EDITOR_DATABASE_PASSWORD'] %>
+  # Render の Postgres アドオン or 外部DB を使う想定
+  url: <%= ENV["DATABASE_URL"] %>
