@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html>
-<%= stylesheet_pack_tag 'hello_vue', media: 'all', 'data-turbolinks-track': 'reload' %>
   <head>
+    <!-- LAYOUT: application -->
+    <meta name="layout" content="application">
+
     <title>WonderfulEditor</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -18,7 +21,7 @@
     <%= yield %>
 
     <%# Webpacker のJSエントリ %>
-    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
-    <%= javascript_pack_tag 'hello_vue', 'data-turbolinks-track': 'reload' %>
+    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload', defer: true %>
+    <%= javascript_pack_tag 'hello_vue', 'data-turbolinks-track': 'reload', defer: true %>
   </body>
 </html>
