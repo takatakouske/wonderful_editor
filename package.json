@@ -39,8 +39,5 @@
     "webpack-cli": "3.3.12",
     "webpack-dev-server": "3.11.3",
     "css-loader": "^4.2.1"
-  },
-  "resolutions": {
-    "node-sass": "0.0.0"
   }
 }
