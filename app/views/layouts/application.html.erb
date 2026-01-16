@@ -6,11 +6,18 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <%# Sprockets 側（app/assets/stylesheets/application.css） %>
     <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
-    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
+
+    <%# Webpacker 側のCSS（hello_vue パックで抽出された CSS を読む） %>
+    <%= stylesheet_pack_tag 'hello_vue', media: 'all', 'data-turbolinks-track': 'reload' %>
   </head>
 
   <body>
     <%= yield %>
+
+    <%# Webpacker のJSエントリ %>
+    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
+    <%= javascript_pack_tag 'hello_vue', 'data-turbolinks-track': 'reload' %>
   </body>
 </html>
