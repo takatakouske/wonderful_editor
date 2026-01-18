@@ -1,27 +1,27 @@
+<!-- app/views/layouts/application.html.erb -->
 <!DOCTYPE html>
 <html>
   <head>
-    <!-- LAYOUT: application -->
+    <!-- デバッグ用の目印（消してOK） -->
     <meta name="layout" content="application">
 
     <title>WonderfulEditor</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%# Sprockets 側（app/assets/stylesheets/application.css） %>
+    <!-- Sprockets 側（必要なら） -->
     <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
 
-    <%# Webpacker 側のCSS（hello_vue パックで抽出された CSS を読む） %>
+    <!-- Webpacker 側 CSS（hello_vue の抽出CSS） -->
     <%= stylesheet_pack_tag 'hello_vue', media: 'all', 'data-turbolinks-track': 'reload' %>
   </head>
-
   <body>
+    <!-- ここに Vue を挿す想定 -->
     <%= yield %>
 
-    <%# Webpacker のJSエントリ %>
-    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload', defer: true %>
-    <%= javascript_pack_tag 'hello_vue', 'data-turbolinks-track': 'reload', defer: true %>
+    <!-- Webpacker JS（defer を推奨） -->
+    <%= javascript_pack_tag 'application', defer: true, 'data-turbolinks-track': 'reload' %>
+    <%= javascript_pack_tag 'hello_vue', defer: true, 'data-turbolinks-track': 'reload' %>
   </body>
 </html>
