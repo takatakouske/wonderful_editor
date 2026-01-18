@@ -24,39 +24,21 @@ Vue.use(Vuetify);
 
 const vuetify = new Vuetify();
 
-// ★ マウント処理を関数化（#app があればそこに、無ければ body に挿す）
-function mountVueApp() {
-  // すでにマウント済みなら二重起動を避ける
-  if (document.getElementById("vue-app-mounted-flag")) return;
-
+function initVue() {
+  // #app が無くても動くように、仮に body 直下へマウントしてもOKにする
   const app = new Vue({
     store,
     router,
     vuetify,
     render: (h) => h(App),
-  });
-
-  const mountTarget = document.getElementById("app");
-  if (mountTarget) {
-    app.$mount("#app");
-  } else {
-    const el = app.$mount().$el;
-    document.body.appendChild(el);
-  }
-
-  // 二重マウント防止用のフラグ
-  const flag = document.createElement("meta");
-  flag.id = "vue-app-mounted-flag";
-  document.head.appendChild(flag);
-
-  console.log("Vue app mounted.");
+  }).$mount(); // 要素指定なしで仮想DOM → 実DOM化
+  document.body.appendChild(app.$el);
+  // console.log(app); // 必要ならデバッグ
 }
 
-// ★ Turbolinks と通常の両方に対応
-document.addEventListener("turbolinks:load", mountVueApp);
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", mountVueApp);
+// すでに DOM 準備済みなら即時、未準備なら DOMContentLoaded でマウント
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initVue);
 } else {
-  // 既に読み込み済みなら即実行
-  mountVueApp();
+  initVue();
 }
