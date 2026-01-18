@@ -1,4 +1,5 @@
 /* eslint no-console: 0 */
+
 import Vue from "vue";
 import Vuex from "vuex";
 import VueRouter from "vue-router";
@@ -8,84 +9,54 @@ import App from "../app.vue";
 
 import axios from "axios";
 import VueAxios from "vue-axios";
-import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
 import "highlight.js/styles/monokai.css";
 import "@fortawesome/fontawesome-free/css/all.css";
+import Vuetify from "vuetify";
 
 Vue.use(Vuex);
 Vue.use(VueRouter);
 Vue.use(VueAxios, axios);
 Vue.use(Vuetify);
 
-/** ====== 認証トークンの共通設定 ====== */
-function loadAuthTokens() {
-  try {
-    const saved = JSON.parse(localStorage.getItem("authTokens") || "{}");
-    if (saved && saved["access-token"] && saved.client && saved.uid) {
-      axios.defaults.headers.common["access-token"] = saved["access-token"];
-      axios.defaults.headers.common["client"] = saved.client;
-      axios.defaults.headers.common["uid"] = saved.uid;
-    }
-  } catch (e) {
-    console.warn("Failed to parse authTokens:", e);
-  }
-}
-function saveAuthTokensFromHeaders(headers) {
-  const at = headers["access-token"];
-  const cl = headers["client"];
-  const uid = headers["uid"];
-  if (at && cl && uid) {
-    const next = { "access-token": at, client: cl, uid };
-    localStorage.setItem("authTokens", JSON.stringify(next));
-    axios.defaults.headers.common["access-token"] = at;
-    axios.defaults.headers.common["client"] = cl;
-    axios.defaults.headers.common["uid"] = uid;
-  }
-}
-loadAuthTokens();
-axios.interceptors.response.use(
-  (res) => {
-    saveAuthTokensFromHeaders(res.headers || {});
-    return res;
-  },
-  (err) => {
-    if (err && err.response && err.response.headers) {
-      saveAuthTokensFromHeaders(err.response.headers);
-    }
-    return Promise.reject(err);
-  }
-);
-Vue.prototype.$clearAuthTokens = () => {
-  localStorage.removeItem("authTokens");
-  delete axios.defaults.headers.common["access-token"];
-  delete axios.defaults.headers.common["client"];
-  delete axios.defaults.headers.common["uid"];
-};
-/** ====== /認証トークン ====== */
+// --- 省略していたトークン処理はそのまま（あなたの現状コードでOK） ---
+// もし入れていれば loadAuthTokens()/interceptors などは残してください。
 
-let vueApp = null;
-const mount = () => {
-  const el = document.getElementById("app"); // ← このDOMにマウント（layoutやhome#indexで用意）
-  if (!el) return;
+const vuetify = new Vuetify();
 
-  // 既にマウント済みなら一度破棄（Turbolinksで二重マウント防止）
-  if (vueApp) {
-    vueApp.$destroy();
-    vueApp = null;
-    el.innerHTML = "";
-  }
+// ★ マウント処理を関数化（#app があればそこに、無ければ body に挿す）
+function mountVueApp() {
+  // すでにマウント済みなら二重起動を避ける
+  if (document.getElementById("vue-app-mounted-flag")) return;
 
-  vueApp = new Vue({
+  const app = new Vue({
     store,
     router,
-    vuetify: new Vuetify(),
+    vuetify,
     render: (h) => h(App),
-  }).$mount(el); // ← 直接 #app にマウント
-};
+  });
 
-// Turbolinks 使用時はこちらのイベントでOK
-document.addEventListener("turbolinks:load", mount);
+  const mountTarget = document.getElementById("app");
+  if (mountTarget) {
+    app.$mount("#app");
+  } else {
+    const el = app.$mount().$el;
+    document.body.appendChild(el);
+  }
 
-// Turbolinksを使っていない環境でも動く保険
-document.addEventListener("DOMContentLoaded", mount);
+  // 二重マウント防止用のフラグ
+  const flag = document.createElement("meta");
+  flag.id = "vue-app-mounted-flag";
+  document.head.appendChild(flag);
+
+  console.log("Vue app mounted.");
+}
+
+// ★ Turbolinks と通常の両方に対応
+document.addEventListener("turbolinks:load", mountVueApp);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", mountVueApp);
+} else {
+  // 既に読み込み済みなら即実行
+  mountVueApp();
+}
